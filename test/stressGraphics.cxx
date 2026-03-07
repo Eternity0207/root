@@ -722,6 +722,60 @@ void tpolyline()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+/// Test fill hatches drawing in complex TPolyLine
+
+void hatches()
+{
+   std::vector<Double_t> vectx, vecty;
+
+   auto C = StartTest(700,500);
+   C->Range(0,0,100,100);
+
+   const int num_steps = 10;
+
+   const Double_t x0 = 5, y0 = 5,
+                  szx = 90, szy = 90.,
+                  dx = szx/num_steps, dy = szy/num_steps;
+
+    auto add_point = [&](Double_t x, Double_t y) {
+       vectx.push_back(x);
+       vecty.push_back(y);
+    };
+
+    for (int step = 0; step < num_steps; step++) {
+        add_point(step == 0 ? x0 : x0 + 0.25*dx, y0 + step*dy);
+        add_point(x0 + szx, y0 + step*dy);
+        if (step == num_steps - 1) {
+           add_point(x0 + szx, y0 + (step + 0.25)*dy);
+        } else {
+           add_point(x0 + szx, y0 + (step + 0.75)*dy);
+           add_point(x0 + 0.25*dx, y0 + (step + 0.75)*dy);
+           add_point(x0 + 0.25*dx, y0 + (step + 1)*dy);
+        }
+    }
+
+    for (int step = num_steps-1; step > 0; step--) {
+        add_point(x0, y0 + (step + 0.25)*dy);
+        add_point(x0, y0 + (step - 0.5)*dy);
+        add_point(x0 + szx - 0.25*dx, y0 + (step - 0.5)*dy);
+        add_point(x0 + szx - 0.25*dx, y0 + (step - 0.75)*dy);
+    }
+
+    add_point(x0, y0 + 0.25*dy);
+    add_point(x0, y0);
+
+   auto p = new TPolyLine(vectx.size(),vectx.data(),vecty.data());
+   p->SetLineWidth(1);
+   p->SetLineColor(2);
+   p->SetFillColor(7);
+   p->SetFillStyle(3227);
+   C->Add(p, "f");
+   C->Add(p);
+
+   TestReport(C, "hatches", "Hatches for complex TPolyLine");
+}
+
+////////////////////////////////////////////////////////////////////////////////
 /// Test TArrow
 
 void arrows()
@@ -735,14 +789,16 @@ void arrows()
 
    auto ar1 = new TArrow(0.1,0.1,0.1,0.7);
    C->Add(ar1);
-   auto ar2 = new TArrow(0.2,0.1,0.2,0.7,0.05,"|>");
+   auto ar2 = new TArrow(0.18,0.1,0.18,0.7,0.05,"|>");
    ar2->SetAngle(40);
    ar2->SetLineWidth(2);
    C->Add(ar2);
-   auto ar3 = new TArrow(0.3,0.1,0.3,0.7,0.05,"<|>");
+   auto ar3 = new TArrow(0.26,0.1,0.26,0.7,0.05,"<|>");
    ar3->SetAngle(40);
    ar3->SetLineWidth(2);
    C->Add(ar3);
+   auto ar33 = new TArrow(0.34,0.1,0.34,0.7,0.05,"|-->--|");
+   C->Add(ar33);
    auto ar4 = new TArrow(0.46,0.7,0.82,0.42,0.07,"|>");
    ar4->SetAngle(60);
    ar4->SetLineWidth(2);
@@ -4451,6 +4507,7 @@ void stressGraphics(Int_t verbose = 0, Bool_t generate = kFALSE, Bool_t keep_fil
    tline         ();
    tmarker       ();
    tpolyline     ();
+   hatches       ();
    arrows        ();
    patterns      ();
    crown         ();

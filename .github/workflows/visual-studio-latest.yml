@@ -10,16 +10,14 @@ on:
         type: choice
         options:
         - Update
-        - Reboot
         - Build
   schedule:
-    - cron: '0  1 * * 3'
-    - cron: '30 1 * * 3'
-    - cron: '0  2 * * 3'
+    - cron: '0  6 * * 3'
+    - cron: '0  7 * * 3'
 
 jobs:
   update-visualstudio-latest:
-    if: ${{ github.event.schedule == '0  1 * * 3' || (github.event_name == 'workflow_dispatch' && inputs.selected-job == 'Update') }}
+    if: ${{ github.event.schedule == '0  6 * * 3' || (github.event_name == 'workflow_dispatch' && inputs.selected-job == 'Update') }}
 
     name: Update Visual Studio - Latest
 
@@ -30,28 +28,20 @@ jobs:
       - latest
 
     steps:
-    - name: Update Visual Studio
+    - name: Update Visual Studio Latest
       shell: cmd
       run: "C:\\bin\\vs_update.bat"
 
-  reboot-after-update:
-    if: ${{ github.event.schedule == '30 1 * * 3' || (github.event_name == 'workflow_dispatch' && inputs.selected-job == 'Reboot') }}
-
-    name: Reboot after update
-
-    runs-on:
-      - self-hosted
-      - windows
-      - x64
-      - latest
-
-    steps:
-    - name: Reboot
+    - name: Display Update Log - Visual Studio Latest
       shell: cmd
-      run: "shutdown /r"
+      run: "timeout 30 > NUL & type C:\\ROOT-CI\\VS-Update.log"
+
+    - name: Reboot after update - Visual Studio Latest
+      shell: cmd
+      run: "timeout 30 > NUL & shutdown /r"
 
   build-windows:
-    if: ${{ github.event.schedule == '0  2 * * 3' || (github.event_name == 'workflow_dispatch' && inputs.selected-job == 'Build') }}
+    if: ${{ github.event.schedule == '0  7 * * 3' || (github.event_name == 'workflow_dispatch' && inputs.selected-job == 'Build') }}
 
     permissions:
       contents: read
@@ -73,8 +63,7 @@ jobs:
         with:
           ref: master
 
-      - name: Wednesday build
-        if: (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch')
+      - name: Build after VS update
         shell: cmd
         run: "C:\\setenv.bat x64 &&
               python .github/workflows/root-ci-config/build_root.py
