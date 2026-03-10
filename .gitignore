@@ -10,7 +10,6 @@ project.xcworkspace
 
 # VS Code
 .vs/
-.vscode
 .build
 
 # CLion
@@ -50,3 +49,6 @@ documentation/doxygen/*.dot
 
 # Pycache
 __pycache__
+temp_auto_push.bat
+temp_interactive_push.bat
+.gitignore
